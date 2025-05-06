@@ -6,50 +6,48 @@ using Microsoft.EntityFrameworkCore;
 namespace SPARSH_MOB.DataAccess
 {
     public class DatabaseHelper : DbContext
-    //(DbContextOptions<DatabaseHelper> options) : DbContext(options)
+    public DatabaseHelper(DbContextOptions<DatabaseHelper> options) : base(options) { }
+    private readonly string _bwliveConnectionString;
+    private readonly string _itKhariaConnectionString;
+    private readonly string _imageDataConnectionString;
+
+    public DatabaseHelper(
+        string bwliveConnectionString,
+        string itKhariaConnectionString,
+        string imageDataConnectionString
+    )
     {
-        private readonly string _bwliveConnectionString;
-        private readonly string _itKhariaConnectionString;
-        private readonly string _imageDataConnectionString;
+        _bwliveConnectionString = bwliveConnectionString;
+        _itKhariaConnectionString = itKhariaConnectionString;
+        _imageDataConnectionString = imageDataConnectionString;
+    }
 
-        public DatabaseHelper(
-            string bwliveConnectionString,
-            string itKhariaConnectionString,
-            string imageDataConnectionString
-        )
+    // General method to execute SELECT queries for any connection string
+    private List<Dictionary<string, object>> ExecuteSelectQuery(
+        string connectionString,
+        string query,
+        Dictionary<string, object> parameters
+    )
+    {
+        var resultList = new List<Dictionary<string, object>>();
+        using (var conn = new SqlConnection(connectionString))
+        using (var cmd = new SqlCommand(query, conn))
         {
-            _bwliveConnectionString = bwliveConnectionString;
-            _itKhariaConnectionString = itKhariaConnectionString;
-            _imageDataConnectionString = imageDataConnectionString;
-        }
-
-        // General method to execute SELECT queries for any connection string
-        private List<Dictionary<string, object>> ExecuteSelectQuery(
-            string connectionString,
-            string query,
-            Dictionary<string, object> parameters
-        )
-        {
-            var resultList = new List<Dictionary<string, object>>();
-            using (var conn = new SqlConnection(connectionString))
-            using (var cmd = new SqlCommand(query, conn))
+            foreach (var param in parameters)
             {
-                foreach (var param in parameters)
+                cmd.Parameters.AddWithValue(param.Key, param.Value);
+            }
+            conn.Open();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
                 {
-                    cmd.Parameters.AddWithValue(param.Key, param.Value);
-                }
-                conn.Open();
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
+                    var row = new Dictionary<string, object>();
+                    for (int i = 0; i < reader.FieldCount; i++)
                     {
-                        var row = new Dictionary<string, object>();
-                        for (int i = 0; i < reader.FieldCount; i++)
-                        {
-                            row[reader.GetName(i)] = reader[i];
-                        }
-                        resultList.Add(row);
+                        row[reader.GetName(i)] = reader[i];
                     }
+                    resultList.Add(row);
                 }
             }
             return resultList;

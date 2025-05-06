@@ -4396,23 +4396,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\admin\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\HP\\.nuget\\packages\\": {},
+    "D:\\Program Files\\Visual Studio\\2022\\Extras\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Parikshit\\Codes\\April end\\dotnet\\try\\token_api.csproj",
+      "projectUniqueName": "D:\\Parikshit\\INfo\\2025 codes\\Dotnet\\dotnet_api1\\token_api.csproj",
       "projectName": "token_api",
-      "projectPath": "C:\\Parikshit\\Codes\\April end\\dotnet\\try\\token_api.csproj",
-      "packagesPath": "C:\\Users\\admin\\.nuget\\packages\\",
-      "outputPath": "C:\\Parikshit\\Codes\\April end\\dotnet\\try\\obj\\",
+      "projectPath": "D:\\Parikshit\\INfo\\2025 codes\\Dotnet\\dotnet_api1\\token_api.csproj",
+      "packagesPath": "C:\\Users\\HP\\.nuget\\packages\\",
+      "outputPath": "D:\\Parikshit\\INfo\\2025 codes\\Dotnet\\dotnet_api1\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "D:\\Program Files\\Visual Studio\\2022\\Extras\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\HP\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
