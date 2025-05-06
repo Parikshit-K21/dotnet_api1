@@ -54,8 +54,45 @@ namespace sparshWebService.Controllers
                 //Console.WriteLine(" Exception: " + ex.Message);
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
+        [AllowAnonymous]
+            [HttpPost("check-cvv")]
+            public IActionResult CheckCvv([FromBody] CvvRequest request)
+            {
+                if (request == null || string.IsNullOrWhiteSpace(request.numCvvNo) || string.IsNullOrWhiteSpace(request.tokenNum))
+                {
+                    return BadRequest("Parameters 'numCvvNo' and 'tokenNum' are required.");
+                }
+                try
+                {
+                    var query = "SELECT numCvvNo FROM LY_dpmTokenNos WHERE tokenNum = @tokenNum";
+                    var parameters = new Dictionary<string, object>
+                    {
+                        { "@tokenNum", request.tokenNum },
+                    };
+                    var result = _dbHelper.WebSessBean(query, parameters);
+                    if (result == null || result.Count == 0)
+                    {
+                        return Unauthorized("Invalid Token.");
+                    }
+                    string? storedCvv = result[0]["numCvvNo"]?.ToString();
+                    if (storedCvv == request.numCvvNo)
+                    {
+                        return StatusCode(200, "CVV is correct");
+                    }
+                    return Unauthorized("Invalid CVV.");
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, $"Internal server error: {ex.Message}");
+                }
+            }
         }
     }
+public class CvvRequest
+{
+    public string? numCvvNo { get; set; }
+    public string? tokenNum { get; set; }
+}
 
     public class TokenRequest
     {

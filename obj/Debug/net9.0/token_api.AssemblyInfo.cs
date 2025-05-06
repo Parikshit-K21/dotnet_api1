@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("token_api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+72d1335d22795576cee772fec51d73c847929a80")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f7f4349ebec6fb8bd3b9a95ea6df75e4693619cb")]
 [assembly: System.Reflection.AssemblyProductAttribute("token_api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("token_api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
