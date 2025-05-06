@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\token_api.props" />
+</Project>

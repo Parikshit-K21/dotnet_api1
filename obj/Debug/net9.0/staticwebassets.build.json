@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "ew2Qf4yzQ7V9a7dtzVFLhEqGGExJw6lV96gqr1R9iig=",
+  "Source": "token_api",
+  "BasePath": "_content/token_api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
