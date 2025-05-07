@@ -86,16 +86,52 @@ namespace sparshWebService.Controllers
                     return StatusCode(500, $"Internal server error: {ex.Message}");
                 }
             }
+        [AllowAnonymous]
+        [HttpPost("get-token-details")]
+        public IActionResult GetTokenDetails([FromBody] CvvRequest request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.numCvvNo) || string.IsNullOrWhiteSpace(request.tokenNum))
+            {
+                return BadRequest("Parameters 'numCvvNo' and 'tokenNum' are required.");
+            }
+            try
+            {
+                var query = "SELECT validDay, tokenIdn, DocuNumb, tknValue, productValue FROM LY_dpmTokenNos WHERE tokenNum = @tokenNum AND numCvvNo = @numCvvNo";
+                var parameters = new Dictionary<string, object>
+                {
+                    { "@tokenNum", request.tokenNum },
+                    { "@numCvvNo", request.numCvvNo }
+                };
+                var result = _dbHelper.WebSessBean(query, parameters);
+                if (result == null || result.Count == 0)
+                {
+                    return Unauthorized("Invalid Token or CVV.");
+                }
+                var tokenDetails = new
+                {
+                    validDay = result[0]["validDay"],
+                    tokenIdn = result[0]["tokenIdn"],
+                    DocuNumb = result[0]["DocuNumb"],
+                    tknValue = result[0]["tknValue"],
+                    productValue = result[0]["productValue"]
+                };
+                return Ok(new { message = "success", values = tokenDetails });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
     }
+}
+}
 public class CvvRequest
 {
     public string? numCvvNo { get; set; }
     public string? tokenNum { get; set; }
 }
 
-    public class TokenRequest
+ public class TokenRequest
     {
         public string? tokenNum { get; set; }
     }
-}
