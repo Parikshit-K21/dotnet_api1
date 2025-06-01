@@ -1,0 +1,66 @@
+WITH InfluencerScanSummary AS (
+    -- This CTE (Common Table Expression) calculates the first and last scan dates for each influencer
+    SELECT
+        inflCode,
+        MIN(createDt) AS FirstScanDate,
+        MAX(createDt) AS LastScanDate
+    FROM
+        lytCodeHsty WITH (NOLOCK)
+    GROUP BY
+        inflCode
+)
+SELECT
+    b.docunumb,
+
+    -- New Users (App Downloaded On/After Meet Date)
+    COUNT(DISTINCT CASE
+        WHEN e.tncDttme IS NOT NULL AND e.tncDttme >= a.meetdate THEN d.inflCode
+        ELSE NULL
+    END) AS NewUsersAppDownloadedOnOrAfterMeet,
+
+    -- Started Scanning (First Token Scan After Meet) - for New Users
+    COUNT(DISTINCT CASE
+        WHEN e.tncDttme IS NOT NULL AND e.tncDttme >= a.meetdate -- Is a New User (App Downloaded On/After Meet Date)
+        AND ISS.FirstScanDate IS NOT NULL AND ISS.FirstScanDate >= a.meetdate THEN d.inflCode
+        ELSE NULL
+    END) AS StartedScanningAfterMeet,
+
+    -- Existing Users (App Downloaded Before Meet Date)
+    COUNT(DISTINCT CASE
+        WHEN e.tncDttme IS NOT NULL AND e.tncDttme < a.meetdate THEN d.inflCode
+        ELSE NULL
+    END) AS ExistingUsersAppDownloadedBeforeMeet,
+
+    -- Existing Regular Scanners (Scan Before Meet Date) - for Existing Users
+    COUNT(DISTINCT CASE
+        WHEN e.tncDttme IS NOT NULL AND e.tncDttme < a.meetdate -- Is an Existing User (App Downloaded Before Meet Date)
+        AND ISS.FirstScanDate IS NOT NULL AND ISS.FirstScanDate < a.meetdate THEN d.inflCode
+        ELSE NULL
+    END) AS ExistingRegularScanners,
+
+    -- Dormant Users (No Scans) - for Existing Users
+    COUNT(DISTINCT CASE
+        WHEN e.tncDttme IS NOT NULL AND e.tncDttme < a.meetdate -- Is an Existing User (App Downloaded Before Meet Date)
+        AND ISS.FirstScanDate IS NULL -- FirstScanDate is NULL because of LEFT JOIN, indicating no scan history
+        THEN d.inflCode
+        ELSE NULL
+    END) AS DormantUsersNoScans,
+
+    -- Dormant to Active (First Scan After Meet) - for Existing Users
+    COUNT(DISTINCT CASE
+        WHEN e.tncDttme IS NOT NULL AND e.tncDttme < a.meetdate -- Is an Existing User (App Downloaded Before Meet Date)
+        AND ISS.FirstScanDate IS NOT NULL AND ISS.FirstScanDate >= a.meetdate THEN d.inflCode
+        ELSE NULL
+    END) AS DormantToActiveFirstScanAfterMeet
+FROM
+    catactpresl a WITH (NOLOCK)
+    INNER JOIN catactpresldtl b WITH (NOLOCK) ON a.docunumb = b.docunumb
+    INNER JOIN ctminfluncr d WITH (NOLOCK) ON b.dsrrem09 = d.mobileNo
+    INNER JOIN lymInfluncr e WITH (NOLOCK) ON e.inflCode = d.inflCode
+    LEFT JOIN InfluencerScanSummary ISS ON d.inflCode = ISS.inflCode
+WHERE
+    a.caaactty = '03' -- Filter for 'Activity Type'
+    AND b.attntype = 'i' -- Filter for 'Attention Type' (e.g., 'influencer')
+    AND b.dsrrem09 IS NOT NULL -- Ensure Mobile Number is not NULL
+GROUP BY
+    b.docunumb;
