@@ -61,3 +61,24 @@ WHERE
     AND b.dsrrem09 IS NOT NULL
 GROUP BY
     b.docunumb;
+
+
+
+SELECT
+    -- Dormant Users (No Scans) - for Existing Users
+    COUNT(DISTINCT d.inflCode) AS DormantUsersNoScans
+FROM
+    catactpresl a WITH (NOLOCK),
+    catactpresldtl b WITH (NOLOCK),
+    ctminfluncr d WITH (NOLOCK),
+    lymInfluncr e WITH (NOLOCK)
+WHERE
+    a.docunumb = b.docunumb
+    AND b.dsrrem09 = d.mobileNo
+    AND e.inflCode = d.inflCode
+    AND a.caaactty = '03'
+    AND b.attntype = 'i'
+    AND b.dsrrem09 IS NOT NULL
+    AND e.tncDttme IS NOT NULL
+    AND e.tncDttme < a.meetdate -- Is an Existing User (App Downloaded Before Meet Date)
+    AND NOT EXISTS (SELECT 1 FROM lytCodeHsty LCH_NE WITH (NOLOCK) WHERE LCH_NE.inflCode = d.inflCode); -- No scan records for this influencer
