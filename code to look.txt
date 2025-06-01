@@ -1,14 +1,3 @@
-WITH InfluencerScanSummary AS (
-    -- This CTE (Common Table Expression) calculates the first and last scan dates for each influencer
-    SELECT
-        inflCode,
-        MIN(createDt) AS FirstScanDate,
-        MAX(createDt) AS LastScanDate
-    FROM
-        lytCodeHsty WITH (NOLOCK)
-    GROUP BY
-        inflCode
-)
 SELECT
     b.docunumb,
 
@@ -21,7 +10,7 @@ SELECT
     -- Started Scanning (First Token Scan After Meet) - for New Users
     COUNT(DISTINCT CASE
         WHEN e.tncDttme IS NOT NULL AND e.tncDttme >= a.meetdate -- Is a New User (App Downloaded On/After Meet Date)
-        AND ISS.FirstScanDate IS NOT NULL AND ISS.FirstScanDate >= a.meetdate THEN d.inflCode
+        AND ScanSummary.FirstScanDate IS NOT NULL AND ScanSummary.FirstScanDate >= a.meetdate THEN d.inflCode
         ELSE NULL
     END) AS StartedScanningAfterMeet,
 
@@ -34,14 +23,17 @@ SELECT
     -- Existing Regular Scanners (Scan Before Meet Date) - for Existing Users
     COUNT(DISTINCT CASE
         WHEN e.tncDttme IS NOT NULL AND e.tncDttme < a.meetdate -- Is an Existing User (App Downloaded Before Meet Date)
-        AND ISS.FirstScanDate IS NOT NULL AND ISS.FirstScanDate < a.meetdate THEN d.inflCode
+        AND ScanSummary.FirstScanDate IS NOT NULL AND ScanSummary.FirstScanDate < a.meetdate THEN d.inflCode
         ELSE NULL
     END) AS ExistingRegularScanners,
 
     -- Dormant Users (No Scans) - for Existing Users
+    -- IMPORTANT: This metric will likely be INCORRECT (often 0) in this single query.
+    -- Due to the implicit INNER JOIN to ScanSummary below, this condition will almost never be met.
+    -- An influencer with *no* scan data will be filtered out *before* this CASE statement can evaluate.
     COUNT(DISTINCT CASE
-        WHEN e.tncDttme IS NOT NULL AND e.tncDttme < a.meetdate -- Is an Existing User (App Downloaded Before Meet Date)
-        AND ISS.FirstScanDate IS NULL -- FirstScanDate is NULL because of LEFT JOIN, indicating no scan history
+        WHEN e.tncDttme IS NOT NULL AND e.tncDttme < a.meetdate -- Is an Existing User
+        AND NOT EXISTS (SELECT 1 FROM lytCodeHsty LCH_NE WITH (NOLOCK) WHERE LCH_NE.inflCode = d.inflCode)
         THEN d.inflCode
         ELSE NULL
     END) AS DormantUsersNoScans,
@@ -49,18 +41,23 @@ SELECT
     -- Dormant to Active (First Scan After Meet) - for Existing Users
     COUNT(DISTINCT CASE
         WHEN e.tncDttme IS NOT NULL AND e.tncDttme < a.meetdate -- Is an Existing User (App Downloaded Before Meet Date)
-        AND ISS.FirstScanDate IS NOT NULL AND ISS.FirstScanDate >= a.meetdate THEN d.inflCode
+        AND ScanSummary.FirstScanDate IS NOT NULL AND ScanSummary.FirstScanDate >= a.meetdate THEN d.inflCode
         ELSE NULL
     END) AS DormantToActiveFirstScanAfterMeet
 FROM
-    catactpresl a WITH (NOLOCK)
-    INNER JOIN catactpresldtl b WITH (NOLOCK) ON a.docunumb = b.docunumb
-    INNER JOIN ctminfluncr d WITH (NOLOCK) ON b.dsrrem09 = d.mobileNo
-    INNER JOIN lymInfluncr e WITH (NOLOCK) ON e.inflCode = d.inflCode
-    LEFT JOIN InfluencerScanSummary ISS ON d.inflCode = ISS.inflCode
+    catactpresl a WITH (NOLOCK),
+    catactpresldtl b WITH (NOLOCK),
+    ctminfluncr d WITH (NOLOCK),
+    lymInfluncr e WITH (NOLOCK),
+    -- Subquery to get the first and last scan dates for each influencer who has scanned
+    (SELECT inflCode, MIN(createDt) AS FirstScanDate, MAX(createDt) AS LastScanDate FROM lytCodeHsty WITH (NOLOCK) GROUP BY inflCode) ScanSummary
 WHERE
-    a.caaactty = '03' -- Filter for 'Activity Type'
-    AND b.attntype = 'i' -- Filter for 'Attention Type' (e.g., 'influencer')
-    AND b.dsrrem09 IS NOT NULL -- Ensure Mobile Number is not NULL
+    a.docunumb = b.docunumb
+    AND b.dsrrem09 = d.mobileNo
+    AND e.inflCode = d.inflCode
+    AND d.inflCode = ScanSummary.inflCode -- This is the implicit INNER JOIN to scan data
+    AND a.caaactty = '03'
+    AND b.attntype = 'i'
+    AND b.dsrrem09 IS NOT NULL
 GROUP BY
     b.docunumb;
