@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rak_web/theme.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
   Widget buildModernTextField({
@@ -103,7 +103,7 @@ import 'package:shared_preferences/shared_preferences.dart';
         items: items.map((item) {
           return DropdownMenuItem(
             value: item,
-            child: Text(item, style: AppTheme.body),
+            child: Text(item, style: const TextStyle(fontSize: 14)),
           );
         }).toList(),
         onChanged: onChanged,
@@ -228,7 +228,10 @@ Widget buildModernImageUpload({
               SnackBar(
                 content: Text(
                   '$label uploaded successfully',
-                  style: AppTheme.success,
+                  style: const TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(

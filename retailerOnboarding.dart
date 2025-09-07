@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:rak_web/new/api/ApiCon.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../widgets/custom_widgets.dart';
+import '/custom_widgets.dart';
+import 'ApiCon.dart';
 
 class RetailerOnboardingApp extends StatelessWidget {
   @override
@@ -22,6 +23,7 @@ class RetailerFormPage extends StatefulWidget {
 class _RetailerFormPageState extends State<RetailerFormPage> {
   final _formKey = GlobalKey<FormState>();
   final bool _isVATRequired= true;
+   RetailerApiService api = RetailerApiService();
   // Individual controllers for each field
   final firmNameController = TextEditingController();
   final taxRegNumberController = TextEditingController();
@@ -43,7 +45,8 @@ class _RetailerFormPageState extends State<RetailerFormPage> {
 
  Future<void> _saveData() async {
   try {
-    final api = RetailerApiService();
+
+  
 
     await api.insertRetailer(
       licenseNumber: licenseNumberController.text,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '/custom_widgets.dart';
 
-import '../widgets/custom_widgets.dart';
 
 class SampleDistributEntry extends StatefulWidget {
   @override
@@ -42,7 +42,7 @@ class _SampleDistributEntryState extends State<SampleDistributEntry> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Retailer Onboarding Form')),
+      appBar: AppBar(title: Text('Materail DIS to Painter and Contractors')),
      body: Container(
   decoration: BoxDecoration(
     gradient: LinearGradient(
